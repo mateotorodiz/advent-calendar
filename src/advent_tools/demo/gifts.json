@@ -1,5 +1,5 @@
 [
   { "day": 1, "note": "Demo text for door one.", "photo": "demo.png" },
   { "day": 2, "audio": "demo.wav" },
-  { "day": 3, "song": "https://example.com/" }
+  { "day": 3, "song": "https://commons.wikimedia.org/wiki/File:Dance_of_the_Sugar_Plum_Fairy_(ISRC_USUAN1100625).mp3" }
 ]

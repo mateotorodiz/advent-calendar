@@ -71,7 +71,9 @@ def test_phone_flow(phone, browser_worker_url):
     use_time(phone, "phone-flow", "2026-11-29T23:00:00Z")
     phone.evaluate("dispatchEvent(new Event('focus'))")
     phone.get_by_role("button", name="Door 3, today").click()
-    expect(phone.get_by_role("link", name="Listen to the song")).to_have_attribute("href", "https://example.com/")
+    expect(phone.get_by_role("link", name="Listen to the song")).to_have_attribute(
+        "href", "https://commons.wikimedia.org/wiki/File:Dance_of_the_Sugar_Plum_Fairy_(ISRC_USUAN1100625).mp3",
+    )
 
 
 def test_gift_bookmark_requires_sign_in_and_survives_reload(phone, browser_worker_url):

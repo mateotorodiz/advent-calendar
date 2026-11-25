@@ -61,6 +61,8 @@ Target a demo handoff on November 27, subject to plan approval and Cloudflare ac
 
 **Exit check.** Record the result of each phone check. Fix any failures in a red–green–refactor cycle and rerun the affected checks before release.
 
+**Preflight.** Tested the smoke check locally over HTTPS on all four calendar states with the packaged dummy gifts. Wrangler accepted the separate demo configuration in a dry run. The hosted smoke check and actual phone checks are pending.
+
 ## Stage 6 · Production handoff
 
 - Validate all 24 entries, preview the real content locally, and open song links and play media on the intended device. Keep a short setup and deployment guide in the repo.

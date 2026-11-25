@@ -1,0 +1,17 @@
+{
+  "name": "advent-calendar-demo",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-11-25",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "dist/demo",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "vars": { "CALENDAR_SCHEDULE": "demo" },
+  "secrets": { "required": ["CALENDAR_PASSPHRASE", "SESSION_SIGNING_KEY"] },
+  "ratelimits": [
+    { "name": "SIGN_IN_LIMITER", "namespace_id": "521928", "simple": { "limit": 5, "period": 60 } }
+  ]
+}
