@@ -46,6 +46,7 @@ content/              Real gifts and media, ignored by Git
 - Build the passphrase screen, the 24-door grid, and the gift view. Highlight today’s door, show which doors are locked, and let the visitor return to gifts that have already been released.
 - Refresh availability when the page regains focus or becomes visible. Use the browser’s native audio controls and a regular link for songs.
 - **Exit check.** Verify the passphrase, door navigation, error feedback, and media controls at a mobile viewport. Check the actual chat app and phone during the hosted demo.
+- **Verified.** Chrome at mobile viewports exercised incorrect and correct passphrases, refresh across Rome midnight, navigation and bookmarks, and the session expiration flow. The demo photo loaded, its audio played and supported seeking, and the song appeared as a regular link. All 24 production doors fit a 320-pixel viewport.
 
 ## Stage 5 · Three-day hosted demo
 

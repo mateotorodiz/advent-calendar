@@ -29,7 +29,17 @@ def packaged_demo_worker_url(tmp_path_factory):
     yield from run_worker(tmp_path_factory, assets_directory=bundle.parent)
 
 
-def run_worker(tmp_path_factory, *, use_release_entry=False, assets_directory=None):
+@pytest.fixture(scope="session")
+def browser_worker_url(tmp_path_factory):
+    project = Path(__file__).resolve().parents[1]
+    scratch = tmp_path_factory.mktemp("web-project")
+    bundle = package_gifts("demo", scratch)
+    subprocess.run(["node", str(project / "src" / "web" / "build.mjs"), "demo"],
+                   cwd=scratch, check=True)
+    yield from run_worker(tmp_path_factory, assets_directory=bundle.parent, https=True)
+
+
+def run_worker(tmp_path_factory, *, use_release_entry=False, assets_directory=None, https=False):
     project = Path(__file__).resolve().parents[1]
     wrangler = project / "node_modules" / "wrangler" / "bin" / "wrangler.js"
     config = project / "tests" / "fixtures" / "wrangler.jsonc"
@@ -48,7 +58,8 @@ def run_worker(tmp_path_factory, *, use_release_entry=False, assets_directory=No
         config = scratch / "wrangler.jsonc"
         config.write_text(json.dumps(settings), encoding="utf-8")
     log_path = scratch / "wrangler.log"
-    protocol = "https" if use_release_entry else "http"
+    use_https = https or use_release_entry
+    protocol = "https" if use_https else "http"
     url = f"{protocol}://127.0.0.1:{port}"
     entry_args = []
     if use_release_entry:
@@ -80,8 +91,8 @@ def run_worker(tmp_path_factory, *, use_release_entry=False, assets_directory=No
         )
         try:
             deadline = time.monotonic() + 30
-            # The release-entry check uses Wrangler's self-signed loopback certificate.
-            with httpx.Client(trust_env=False, timeout=0.5, verify=not use_release_entry) as client:
+            # HTTPS fixtures use Wrangler's self-signed loopback certificate.
+            with httpx.Client(trust_env=False, timeout=0.5, verify=not use_https) as client:
                 while worker.poll() is None and time.monotonic() < deadline:
                     try:
                         client.get(f"{url}/healthz")

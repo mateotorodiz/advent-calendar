@@ -14,11 +14,26 @@ uv run --locked pytest
 
 Pytest starts and stops a local Wrangler server with dummy assets. The tests use temporary state and run without a Cloudflare account. The [implementation plan](plans/01-advent-calendar.md) covers the demo and production stages.
 
+## Preview the calendar
+
+```sh
+uv run --locked python -m advent_tools demo
+pnpm build:web demo
+pnpm exec wrangler dev src/worker/index.ts --local --config tests/fixtures/wrangler.jsonc --assets ./dist/demo
+```
+
+Open the local URL Wrangler prints in a browser and use `fixture-passphrase`. This preview uses the current time. The optional mobile browser tests use a fixed clock to exercise all three demo days immediately.
+
+```sh
+uv run --locked --group browser playwright install chromium
+uv run --locked --group browser pytest
+```
+
 ## Prepare gifts
 
 1. Copy the blank [gift template](examples/gifts.json) to `content/gifts.json` and add at least one item per day. Use `note`, `joke`, `song`, `photo`, or `audio` in any combination. Use an HTTPS URL for `song` and a file path relative to `content/` for photos and voice notes. The [demo manifest](src/advent_tools/demo/gifts.json) shows the format.
 2. Put any media files in `content/` or a subfolder. Photos can be JPEG, PNG, or WebP. Audio can be MP3, M4A, or WAV. Each file can be up to 10 MiB.
-3. Run `uv run --locked python -m advent_tools production` from the repository root. It validates all 24 entries and writes `dist/production/_gifts/`. Fix any errors it reports in `content/gifts.json`, then rerun the command.
+3. Run `uv run --locked python -m advent_tools production` from the repository root. It validates all 24 entries and writes `dist/production/_gifts/`. Fix any errors it reports in `content/gifts.json`, then rerun the command. Run `pnpm build:web production` to add the public pages to `dist/production/`.
 
 Run `uv run --locked python -m advent_tools demo` to build `dist/demo/_gifts/` from the three bundled dummy gifts. The demo uses a sample image, a two-tone audio clip, and a placeholder HTTPS link. Both `content/` and `dist/` are ignored by Git.
 
