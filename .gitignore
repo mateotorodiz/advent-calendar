@@ -1,0 +1,12 @@
+/.venv/
+__pycache__/
+/.pytest_cache/
+/node_modules/
+/.pnpm-store/
+.wrangler/
+/dist/
+/content/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
