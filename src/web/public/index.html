@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#142d28">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Advent calendar</title>
+    <link rel="stylesheet" href="/calendar.css">
+    <script type="module" src="/calendar.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div class="masthead-title"><h1>Advent<br>calendar</h1></div>
+        <div class="ornament" aria-hidden="true"><span></span></div>
+      </header>
+
+      <section id="loading" class="panel loading">
+        <p id="loading-message" role="status">Loading your calendar…</p>
+        <button id="retry-calendar" class="action" type="button" hidden>Try again</button>
+      </section>
+      <noscript><p class="panel">Turn on JavaScript to open your advent calendar.</p></noscript>
+
+      <section id="login" class="panel login" aria-labelledby="login-title" hidden>
+        <h2 id="login-title">Open your calendar</h2>
+        <form id="sign-in" action="/api/session" method="post">
+          <label for="passphrase">Passphrase</label>
+          <input id="passphrase" name="passphrase" type="password" required
+            autocomplete="current-password" autocapitalize="none" spellcheck="false"
+            aria-describedby="login-error">
+          <p id="login-error" class="error" role="alert"></p>
+          <button id="unlock" class="action" type="submit">Unlock calendar</button>
+        </form>
+      </section>
+
+      <section id="calendar" class="panel calendar" aria-labelledby="calendar-title" hidden>
+        <h2 id="calendar-title" tabindex="-1">Choose a door</h2>
+        <p class="subtle">New doors open at midnight in Italy.</p>
+        <p id="calendar-message" class="error" role="status"></p>
+        <ol id="doors" class="doors"></ol>
+      </section>
+
+      <section id="gift" class="panel gift" aria-labelledby="gift-title" hidden>
+        <a class="back" href="#">Back to calendar</a>
+        <h2 id="gift-title" tabindex="-1"></h2>
+        <p id="gift-message" class="error" role="status"></p>
+        <button id="retry-gift" class="action" type="button" hidden>Try again</button>
+        <div id="gift-content" class="gift-content"></div>
+      </section>
+    </main>
+  </body>
+</html>
