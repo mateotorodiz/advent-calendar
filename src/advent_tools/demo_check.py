@@ -6,6 +6,8 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from advent_tools.gifts import DAY_COUNTS
+
 
 class SmokeCheckError(ValueError):
     pass
@@ -38,22 +40,23 @@ def check_demo(client: httpx.Client, passphrase: str, *, now: datetime | None = 
     local_day = (now or datetime.now(timezone.utc)).astimezone(italy).date()
     expected = [
         {"day": day, "unlocked": local_day >= release, "today": local_day == release}
-        for day, release in enumerate((date(2026, 11, day) for day in (28, 29, 30)), start=1)
+        for day, release in enumerate((date(2026, 11, day) for day in range(25, 31)), start=1)
     ]
     if response.json() != {"doors": expected}:
-        raise SmokeCheckError("Door states do not match the November 28–30 Rome schedule.")
+        raise SmokeCheckError("Door states do not match the November 25–30 Rome schedule.")
 
     for door in expected:
         status = 200 if door["unlocked"] else 403
         expect_status(client.get(f"/api/doors/{door['day']}"), status)
-    expect_status(client.get("/api/doors/4"), 404)
-    expect_status(client.get("/api/doors/1/photo"), 200 if expected[0]["unlocked"] else 403)
-    audio = client.get("/api/doors/2/audio", headers={"Range": "bytes=0-1"})
-    expect_status(audio, 206 if expected[1]["unlocked"] else 403)
-    if expected[1]["unlocked"]:
-        content_range = audio.headers.get("content-range", "")
-        if audio.content != b"RI" or not content_range.startswith("bytes 0-1/"):
-            raise SmokeCheckError("The audio did not return the requested two bytes.")
+    expect_status(client.get("/api/doors/7"), 404)
+    for day in (1, 4):
+        expect_status(client.get(f"/api/doors/{day}/photo"), 200 if expected[day - 1]["unlocked"] else 403)
+    for day in (2, 5):
+        unlocked = expected[day - 1]["unlocked"]
+        audio = client.get(f"/api/doors/{day}/audio", headers={"Range": "bytes=0-1"})
+        expect_status(audio, 206 if unlocked else 403)
+        if unlocked and (audio.content != b"RI" or not audio.headers.get("content-range", "").startswith("bytes 0-1/")):
+            raise SmokeCheckError(f"Door {day} audio did not return the requested two bytes.")
     return sum(door["unlocked"] for door in expected)
 
 
@@ -72,7 +75,7 @@ def main() -> None:
             opened = check_demo(client, passphrase)
     except (SmokeCheckError, httpx.HTTPError) as error:
         parser.exit(1, f"Demo check failed: {error}\n")
-    print(f"Demo smoke check passed. {opened} of 3 doors open.")
+    print(f"Demo smoke check passed. {opened} of {DAY_COUNTS['demo']} doors open.")
 
 
 if __name__ == "__main__":

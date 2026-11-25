@@ -18,11 +18,11 @@ def test_hosted_config_uses_only_demo_assets_and_requires_secrets():
     assert set(config["secrets"]["required"]) == {"CALENDAR_PASSPHRASE", "SESSION_SIGNING_KEY"}
 
 
-@pytest.mark.parametrize("opened", [0, 1, 2, 3])
+@pytest.mark.parametrize("opened", range(7))
 def test_demo_smoke_check(browser_worker_url, opened):
     from advent_tools.demo_check import check_demo
 
-    now = datetime(2026, 11, 27 + opened, 20, tzinfo=timezone.utc)
+    now = datetime(2026, 11, 24 + opened, 20, tzinfo=timezone.utc)
     headers = {"x-fixture-time": now.isoformat(), "x-fixture-client": f"hosted-smoke-{opened}"}
     with httpx.Client(base_url=browser_worker_url, headers=headers, verify=False, trust_env=False) as client:
         assert check_demo(client, "fixture-passphrase", now=now) == opened

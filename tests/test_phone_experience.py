@@ -34,14 +34,14 @@ def sign_in(page, passphrase="fixture-passphrase"):
 
 
 def test_phone_flow(phone, browser_worker_url):
-    use_time(phone, "phone-flow", "2026-11-27T22:59:59Z")
+    use_time(phone, "phone-flow", "2026-11-24T22:59:59Z")
     assert phone.goto(browser_worker_url).ok
     sign_in(phone, "incorrect")
     expect(phone.get_by_role("alert")).to_have_text("That passphrase didn’t match. Try again.")
     sign_in(phone)
     expect(phone.get_by_role("button", name="Door 1, locked")).to_be_disabled()
 
-    use_time(phone, "phone-flow", "2026-11-27T23:00:00Z")
+    use_time(phone, "phone-flow", "2026-11-24T23:00:00Z")
     phone.evaluate("dispatchEvent(new Event('focus'))")
     phone.get_by_role("button", name="Door 1, today").click()
     expect(phone.get_by_role("heading", name="Door 1")).to_be_visible()
@@ -52,7 +52,7 @@ def test_phone_flow(phone, browser_worker_url):
     expect(phone.get_by_role("button", name="Door 1, today")).to_be_focused()
     expect(phone.get_by_role("button", name="Door 2, locked")).to_be_disabled()
 
-    use_time(phone, "phone-flow", "2026-11-28T23:00:00Z")
+    use_time(phone, "phone-flow", "2026-11-25T23:00:00Z")
     phone.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
     phone.get_by_role("button", name="Door 2, today").click()
     expect(phone.get_by_role("heading", name="Door 2")).to_be_visible()
@@ -68,7 +68,7 @@ def test_phone_flow(phone, browser_worker_url):
     expect(phone.get_by_role("button", name="Door 1, open")).to_be_enabled()
     assert phone.locator("audio").count() == 0
 
-    use_time(phone, "phone-flow", "2026-11-29T23:00:00Z")
+    use_time(phone, "phone-flow", "2026-11-26T23:00:00Z")
     phone.evaluate("dispatchEvent(new Event('focus'))")
     phone.get_by_role("button", name="Door 3, today").click()
     expect(phone.get_by_role("link", name="Listen to the song")).to_have_attribute(
@@ -77,7 +77,7 @@ def test_phone_flow(phone, browser_worker_url):
 
 
 def test_gift_bookmark_requires_sign_in_and_survives_reload(phone, browser_worker_url):
-    use_time(phone, "bookmark", "2026-11-27T23:00:00Z")
+    use_time(phone, "bookmark", "2026-11-24T23:00:00Z")
     phone.goto(f"{browser_worker_url}/#door-1")
     expect(phone.get_by_role("img", name="Photo for door 1")).to_have_count(0)
     sign_in(phone)
@@ -97,12 +97,12 @@ def test_production_grid_fits_small_phone(phone, browser_worker_url):
 
 
 def test_expired_session_clears_an_open_gift(phone, browser_worker_url):
-    use_time(phone, "expired", "2026-11-27T23:00:00Z")
+    use_time(phone, "expired", "2026-11-24T23:00:00Z")
     phone.goto(f"{browser_worker_url}/#door-1")
     sign_in(phone)
     expect(phone.get_by_role("img", name="Photo for door 1")).to_be_visible()
 
-    use_time(phone, "expired", "2026-12-04T23:00:00Z")
+    use_time(phone, "expired", "2026-12-01T23:00:00Z")
     phone.evaluate("dispatchEvent(new Event('focus'))")
     expect(phone.get_by_role("alert")).to_have_text("Your session ended. Enter the passphrase again.")
     expect(phone.get_by_role("img", name="Photo for door 1")).to_have_count(0)

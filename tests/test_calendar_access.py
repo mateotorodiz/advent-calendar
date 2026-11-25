@@ -7,7 +7,7 @@ import pytest
 PASSPHRASE = "fixture-passphrase"
 COOKIE = "__Host-advent_session"
 ROME = timezone(timedelta(hours=1))  # These releases all fall in Italian winter time.
-BASE_TIME = datetime(2026, 11, 27, 12, tzinfo=ROME)
+BASE_TIME = datetime(2026, 11, 24, 12, tzinfo=ROME)
 
 
 @pytest.fixture
@@ -99,7 +99,7 @@ def test_invalid_sessions_are_rejected_on_both_routes(client, session_problem):
 
 @pytest.mark.parametrize(
     ("schedule", "first_day", "count", "day"),
-    [("demo", datetime(2026, 11, 28, tzinfo=ROME), 3, day) for day in range(1, 4)]
+    [("demo", datetime(2026, 11, 25, tzinfo=ROME), 6, day) for day in range(1, 7)]
     + [("production", datetime(2026, 12, 1, tzinfo=ROME), 24, day) for day in range(1, 25)],
 )
 def test_each_door_releases_at_rome_midnight(client, schedule, first_day, count, day):
@@ -136,15 +136,15 @@ def test_each_door_releases_at_rome_midnight(client, schedule, first_day, count,
         assert client.get(f"/api/doors/{day - 1}").status_code == 200
 
 
-def test_demo_has_no_fourth_gift_and_earlier_doors_stay_open(client):
+def test_demo_has_no_seventh_gift_and_earlier_doors_stay_open(client):
     client.headers["x-fixture-schedule"] = "demo"
     set_time(client, datetime(2026, 12, 1, tzinfo=ROME))
     authenticate(client)
 
-    assert client.get("/api/doors/4").status_code == 404
+    assert client.get("/api/doors/7").status_code == 404
     assert client.get("/api/doors/1").status_code == 200
     assert client.get("/api/calendar").json() == {
-        "doors": [{"day": day, "unlocked": True, "today": False} for day in range(1, 4)]
+        "doors": [{"day": day, "unlocked": True, "today": False} for day in range(1, 7)]
     }
 
 
@@ -175,7 +175,7 @@ def test_packaged_demo_media_unlocks_with_its_own_door(demo_client):
     assert demo_client.get(photo).status_code == 403
     assert demo_client.head(audio).status_code == 403
 
-    set_time(demo_client, datetime(2026, 11, 28, tzinfo=ROME))
+    set_time(demo_client, datetime(2026, 11, 25, tzinfo=ROME))
     assert demo_client.get("/api/doors/1").json()["gift"]["photo"] == photo
     response = demo_client.get(photo)
     assert response.status_code == 200
@@ -185,7 +185,7 @@ def test_packaged_demo_media_unlocks_with_its_own_door(demo_client):
     assert demo_client.get(audio).status_code == 403
     assert demo_client.get("/api/doors/1/audio").status_code == 404
 
-    set_time(demo_client, datetime(2026, 11, 29, tzinfo=ROME))
+    set_time(demo_client, datetime(2026, 11, 26, tzinfo=ROME))
     assert demo_client.get("/api/doors/2").json() == {"day": 2, "gift": {"audio": audio}}
     assert demo_client.get(photo).status_code == 200
     for path in ("/_gifts/2/audio.wav", "/%5Fgifts/2/audio.wav", "/_gifts%2F2/audio.wav"):
@@ -196,7 +196,7 @@ def test_packaged_demo_media_unlocks_with_its_own_door(demo_client):
 
 
 def test_audio_supports_browser_byte_ranges(demo_client):
-    set_time(demo_client, datetime(2026, 11, 29, tzinfo=ROME))
+    set_time(demo_client, datetime(2026, 11, 26, tzinfo=ROME))
     authenticate(demo_client)
     path = "/api/doors/2/audio"
     full = demo_client.get(path)

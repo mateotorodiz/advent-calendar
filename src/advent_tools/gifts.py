@@ -13,7 +13,7 @@ from pydantic import (
 
 MEDIA_FORMATS = {"photo": {".jpg", ".jpeg", ".png", ".webp"}, "audio": {".mp3", ".m4a", ".wav"}}
 MAX_MEDIA_BYTES = 10 * 1024 * 1024
-DAY_COUNTS = {"demo": 3, "production": 24}
+DAY_COUNTS = {"demo": 6, "production": 24}
 
 
 class PackageError(ValueError):
