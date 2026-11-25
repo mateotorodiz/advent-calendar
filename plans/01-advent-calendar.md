@@ -1,6 +1,6 @@
 # Advent Calendar Implementation Plan
 
-Phase 1 approved. Follow the [coder workflow](../skills/coder-workflow/SKILL.md) for each stage. Start each stage from `main` on its own branch and merge it into `main` once its exit checks pass. All dates are in 2026 and use `Europe/Rome`.
+Follow the [coder workflow](../skills/coder-workflow/SKILL.md) for each stage. Start each stage from `main` on its own branch and merge it into `main` once its exit checks pass. All dates are in 2026 and use `Europe/Rome`.
 
 ## Design decision
 
@@ -31,6 +31,7 @@ content/              Real gifts and media, ignored by Git
 - Implement `POST /api/session`, `GET /api/calendar`, and `GET /api/doors/:day`. Store the passphrase and signing key as hosting secrets. Limit repeated guesses and use a signed, expiring `Secure`, `HttpOnly`, `SameSite=Lax` cookie.
 - Evaluate release dates using the server clock and `Europe/Rome`. Inject a fixed clock only in the local test harness. The public deployments use the actual time and separate schedules, secrets, and asset bundles.
 - **Exit check.** Tests cover one second before and exactly at midnight for each scheduled door, including the first and last December dates. Calendar responses expose door states only. Each protected route rejects an invalid session and withholds future gifts from signed-in visitors.
+- **Verified.** Local HTTP tests cover all 27 release boundaries, earlier doors, expired and invalid cookies, repeated guesses, and direct requests for the private gift manifest. A separate local HTTPS check uses the release Worker entry point with the production schedule and sends the secure cookie automatically. The release entry point ignores the test clock and schedule headers.
 
 ## Stage 3 · Gift preparation and protected media
 
@@ -54,7 +55,7 @@ Target a demo handoff on November 27, subject to plan approval and Cloudflare ac
 | November 27 | All doors are locked. The link opens from the intended chat app and prompts for a passphrase. |
 | November 28 | Door 1 opens. Try a wrong passphrase, then sign in and view the note and photo. Verify door 2 and its media stay locked. |
 | November 29 | Door 2 opens and door 1 still works. Check that the same browser remembers the session. Play, pause, and seek in a voice note. Check that a direct gift link requires sign-in in a private tab. |
-| November 30 | Door 3 opens when returning to a tab left open overnight. Follow the song link and return to the calendar. Revisit earlier doors and confirm door 4 stays locked. |
+| November 30 | Door 3 opens when returning to a tab left open overnight. Follow the song link and return to the calendar. Revisit earlier doors and confirm the demo ends at door 3. |
 
 **Exit check.** Record the result of each phone check. Fix any failures in a red–green–refactor cycle and rerun the affected checks before release.
 

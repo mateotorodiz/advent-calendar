@@ -6,5 +6,5 @@
     "lib": ["ES2022", "WebWorker"],
     "strict": true
   },
-  "include": ["src/worker/**/*.ts"]
+  "include": ["src/worker/**/*.ts", "tests/fixtures/worker.ts"]
 }
