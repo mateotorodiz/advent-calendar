@@ -1,0 +1,5 @@
+[
+  { "day": 1, "note": "Demo text for door one.", "photo": "demo.png" },
+  { "day": 2, "audio": "demo.wav" },
+  { "day": 3, "song": "https://example.com/" }
+]

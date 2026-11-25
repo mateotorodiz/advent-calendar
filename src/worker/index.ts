@@ -1,15 +1,14 @@
 import { calendar } from "./calendar";
+import { loadGift, privateHeaders, publicGift, serveMedia, type AssetBinding, type MediaKind } from "./gift-assets";
 import { hasSession, issueSession, matchesPassphrase } from "./session";
 
 export interface Env {
-  ASSETS: { fetch(request: Request): Promise<Response> };
+  ASSETS: AssetBinding;
   CALENDAR_SCHEDULE: string;
   CALENDAR_PASSPHRASE: string;
   SESSION_SIGNING_KEY: string;
   SIGN_IN_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
-
-const privateHeaders = { "Cache-Control": "private, no-store" };
 
 function apiError(error: string, status: number, headers?: Record<string, string>) {
   return Response.json({ error }, { status, headers: { ...privateHeaders, ...headers } });
@@ -74,7 +73,9 @@ export function createWorker(clock: (request: Request) => Date) {
 
       let path: string;
       try {
-        path = new URL(url.origin + decodeURIComponent(url.pathname)).pathname.replace(/\/{2,}/g, "/");
+        const decoded = decodeURIComponent(url.pathname).replaceAll("\\", "/").replace(/\/{2,}/g, "/");
+        if (/[?#%]/.test(decoded)) return apiError("not_found", 404);
+        path = new URL(url.origin + decoded).pathname;
       } catch {
         return apiError("not_found", 404);
       }
@@ -82,16 +83,19 @@ export function createWorker(clock: (request: Request) => Date) {
         return apiError("not_found", 404);
       }
       if (path !== "/api" && !path.startsWith("/api/")) {
-        return env.ASSETS.fetch(request);
+        if (path === url.pathname) return env.ASSETS.fetch(request);
+        url.pathname = path;
+        return env.ASSETS.fetch(new Request(url, request));
       }
 
-      const day = /^\/api\/doors\/([1-9]\d?)$/.exec(path);
+      const day = /^\/api\/doors\/([1-9]\d?)(?:\/(photo|audio))?$/.exec(path);
       if (path !== "/api/session" && path !== "/api/calendar" && !day) {
         return apiError("not_found", 404);
       }
       const method = path === "/api/session" ? "POST" : "GET";
-      if (request.method !== method) {
-        return apiError("method_not_allowed", 405, { Allow: method });
+      const media = day?.[2] as MediaKind | undefined;
+      if (request.method !== method && !(media && request.method === "HEAD")) {
+        return apiError("method_not_allowed", 405, { Allow: media ? "GET, HEAD" : method });
       }
       const schedule = env.CALENDAR_SCHEDULE;
       if ((schedule !== "demo" && schedule !== "production") || !env.CALENDAR_PASSPHRASE ||
@@ -119,16 +123,14 @@ export function createWorker(clock: (request: Request) => Date) {
         return apiError("door_locked", 403);
       }
 
-      const manifest = await env.ASSETS.fetch(new Request(new URL("/_gifts/manifest.json", url)));
-      if (!manifest.ok) {
-        return apiError("gift_unavailable", 503);
-      }
-      const gifts: Record<string, unknown> = await manifest.json();
-      const gift = gifts[door.day];
+      const gift = await loadGift(env.ASSETS, url, door.day);
       if (!gift) {
         return apiError("gift_unavailable", 503);
       }
-      return Response.json({ day: door.day, gift }, { headers: privateHeaders });
+      if (media) {
+        return (await serveMedia(env.ASSETS, request, url, door.day, media, gift)) ?? apiError("not_found", 404);
+      }
+      return Response.json({ day: door.day, gift: publicGift(gift, door.day) }, { headers: privateHeaders });
     },
   };
 }

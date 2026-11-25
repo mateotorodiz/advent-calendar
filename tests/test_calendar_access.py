@@ -12,7 +12,16 @@ BASE_TIME = datetime(2026, 11, 27, 12, tzinfo=ROME)
 
 @pytest.fixture
 def client(worker_url, request):
-    with httpx.Client(base_url=worker_url, timeout=5, trust_env=False) as client:
+    yield from fixed_time_client(worker_url, request)
+
+
+@pytest.fixture
+def demo_client(packaged_demo_worker_url, request):
+    yield from fixed_time_client(packaged_demo_worker_url, request)
+
+
+def fixed_time_client(url, request):
+    with httpx.Client(base_url=url, timeout=5, trust_env=False) as client:
         set_time(client, BASE_TIME)
         client.headers["x-fixture-client"] = request.node.nodeid
         yield client
@@ -149,6 +158,70 @@ def test_the_gift_manifest_cannot_be_read_via_static_assets(client, path):
 
 def test_unknown_api_path_does_not_fall_back_to_assets(client):
     assert client.get("/api/missing").json() == {"error": "not_found"}
+
+
+def test_media_routes_require_a_session(client):
+    set_time(client, datetime(2026, 11, 29, tzinfo=ROME))
+    for path in ("/api/doors/1/photo", "/api/doors/2/audio"):
+        response = client.get(path, headers={"Range": "bytes=0-1"})
+        assert response.status_code == 401
+        assert response.headers["cache-control"] == "private, no-store"
+
+
+def test_packaged_demo_media_unlocks_with_its_own_door(demo_client):
+    authenticate(demo_client)
+    photo = "/api/doors/1/photo"
+    audio = "/api/doors/2/audio"
+    assert demo_client.get(photo).status_code == 403
+    assert demo_client.head(audio).status_code == 403
+
+    set_time(demo_client, datetime(2026, 11, 28, tzinfo=ROME))
+    assert demo_client.get("/api/doors/1").json()["gift"]["photo"] == photo
+    response = demo_client.get(photo)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+    assert response.headers["cache-control"] == "private, no-store"
+    assert response.content.startswith(b"\x89PNG\r\n\x1a\n")
+    assert demo_client.get(audio).status_code == 403
+    assert demo_client.get("/api/doors/1/audio").status_code == 404
+
+    set_time(demo_client, datetime(2026, 11, 29, tzinfo=ROME))
+    assert demo_client.get("/api/doors/2").json() == {"day": 2, "gift": {"audio": audio}}
+    assert demo_client.get(photo).status_code == 200
+    for path in ("/_gifts/2/audio.wav", "/%5Fgifts/2/audio.wav", "/_gifts%2F2/audio.wav"):
+        assert demo_client.get(path).status_code == 404
+
+    del demo_client.headers["Cookie"]
+    assert demo_client.get(audio).status_code == 401
+
+
+def test_audio_supports_browser_byte_ranges(demo_client):
+    set_time(demo_client, datetime(2026, 11, 29, tzinfo=ROME))
+    authenticate(demo_client)
+    path = "/api/doors/2/audio"
+    full = demo_client.get(path)
+    assert full.status_code == 200
+    assert full.headers["content-type"] == "audio/wav"
+    assert full.content.startswith(b"RIFF")
+    length = len(full.content)
+    for value, start, end in (("0-1", 0, 1), ("12-", 12, length - 1), ("-4", length - 4, length - 1)):
+        partial = demo_client.get(path, headers={"Range": f"bytes={value}"})
+        assert partial.status_code == 206
+        assert partial.headers["content-range"] == f"bytes {start}-{end}/{length}"
+        assert partial.headers["content-length"] == str(end - start + 1)
+        assert partial.headers["cache-control"] == "private, no-store"
+        assert partial.content == full.content[start:end + 1]
+
+    impossible = demo_client.get(path, headers={"Range": f"bytes={length}-"})
+    assert impossible.status_code == 416
+    assert impossible.headers["content-range"] == f"bytes */{length}"
+    assert impossible.headers["cache-control"] == "private, no-store"
+    head = demo_client.head(path)
+    assert head.status_code == 200
+    assert head.headers["accept-ranges"] == "bytes"
+    if "content-length" in head.headers:
+        assert head.headers["content-length"] == str(length)
+    assert not head.content
 
 
 def test_release_entry_uses_real_clock_and_cookie_over_https(release_worker_url):

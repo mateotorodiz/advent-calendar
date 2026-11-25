@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 import signal
@@ -7,6 +8,8 @@ import time
 
 import httpx
 import pytest
+
+from advent_tools.gifts import package_gifts
 
 
 @pytest.fixture(scope="session")
@@ -19,7 +22,14 @@ def release_worker_url(tmp_path_factory):
     yield from run_worker(tmp_path_factory, use_release_entry=True)
 
 
-def run_worker(tmp_path_factory, *, use_release_entry=False):
+@pytest.fixture(scope="session")
+def packaged_demo_worker_url(tmp_path_factory):
+    project = tmp_path_factory.mktemp("demo-project")
+    bundle = package_gifts("demo", project)
+    yield from run_worker(tmp_path_factory, assets_directory=bundle.parent)
+
+
+def run_worker(tmp_path_factory, *, use_release_entry=False, assets_directory=None):
     project = Path(__file__).resolve().parents[1]
     wrangler = project / "node_modules" / "wrangler" / "bin" / "wrangler.js"
     config = project / "tests" / "fixtures" / "wrangler.jsonc"
@@ -31,6 +41,12 @@ def run_worker(tmp_path_factory, *, use_release_entry=False):
         port = listener.getsockname()[1]
 
     scratch = tmp_path_factory.mktemp("wrangler")
+    if assets_directory is not None:
+        settings = json.loads(config.read_text(encoding="utf-8"))
+        settings["main"] = (config.parent / settings["main"]).as_posix()
+        settings["assets"]["directory"] = assets_directory.as_posix()
+        config = scratch / "wrangler.jsonc"
+        config.write_text(json.dumps(settings), encoding="utf-8")
     log_path = scratch / "wrangler.log"
     protocol = "https" if use_release_entry else "http"
     url = f"{protocol}://127.0.0.1:{port}"

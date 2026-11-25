@@ -39,6 +39,7 @@ content/              Real gifts and media, ignored by Git
 - Build one command to validate and package gifts from the local content folder. Require three complete entries for the demo and all 24 entries for production.
 - Serve photos and audio only after the Worker verifies both the session and the release date. Route direct asset requests through the Worker, deny access to internal asset paths, and mark protected responses `private, no-store`.
 - **Exit check.** Tests confirm unauthenticated and early media requests fail, internal asset paths are inaccessible, and authorized audio range requests work for seeking. The demo build includes dummy assets only.
+- **Verified.** The packaging command validates the required 3 or 24 days and keeps the previous bundle when validation fails. Local Wrangler tests serve the packaged demo image and audio after release, reject direct internal asset requests, and verify byte-range responses for audio seeking.
 
 ## Stage 4 · Phone experience
 
