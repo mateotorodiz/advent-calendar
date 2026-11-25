@@ -1,0 +1,12 @@
+{
+  "name": "advent-calendar",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=24" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "wrangler": "^4.0.0"
+  }
+}
