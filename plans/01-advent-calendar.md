@@ -67,6 +67,12 @@ Start the hosted demo on November 25. Use a separate URL, passphrase, and dummy 
 
 **Hosted verification, November 25.** The live six-day demo passed the HTTPS smoke check. Door 1 and its photo were available after sign-in, doors 2–6 were locked, and direct requests for internal gift files returned `404`. Mobile Chrome verified sign-in and loaded the first photo. The dated checks on the actual phone and chat app are pending.
 
+## Christmas shelf design
+
+- Use the approved shelf artwork with its pink lace gifts, snowboard, helmet, and pine-bark-brown crochet scarf. Keep the 24 numbers in a fixed shuffled order so visitors can find a gift again.
+- Align real buttons with the illustrated gifts and highlight today's number with a 2200 K-inspired amber glow. Show all 24 boxes in both modes. The six-day demo schedules boxes 1–6.
+- **Verified locally.** Mobile Chrome displayed the artwork, highlighted the scheduled gift, opened it by tap, and kept box 24 locked in demo mode.
+
 ## Stage 6 · Production handoff
 
 - Validate all 24 entries, preview the real content locally, and open song links and play media on the intended device. Keep a short setup and deployment guide in the repo.

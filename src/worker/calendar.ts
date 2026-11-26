@@ -22,6 +22,7 @@ export function calendar(schedule: keyof typeof schedules, now: Date) {
 
   return schedules[schedule].map((releaseDate, index) => ({
     day: index + 1,
+    releaseDate,
     unlocked: releaseDate <= localDate,
     today: releaseDate === localDate,
   }));

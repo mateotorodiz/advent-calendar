@@ -110,7 +110,8 @@ def test_each_door_releases_at_rome_midnight(client, schedule, first_day, count,
 
     assert client.get("/api/calendar").json() == {
         "doors": [
-            {"day": number, "unlocked": number < day, "today": number == day - 1}
+            {"day": number, "releaseDate": (first_day + timedelta(days=number - 1)).date().isoformat(),
+             "unlocked": number < day, "today": number == day - 1}
             for number in range(1, count + 1)
         ]
     }
@@ -124,7 +125,8 @@ def test_each_door_releases_at_rome_midnight(client, schedule, first_day, count,
     assert response.headers["cache-control"] == "private, no-store"
     assert response.json() == {
         "doors": [
-            {"day": number, "unlocked": number <= day, "today": number == day}
+            {"day": number, "releaseDate": (first_day + timedelta(days=number - 1)).date().isoformat(),
+             "unlocked": number <= day, "today": number == day}
             for number in range(1, count + 1)
         ]
     }
@@ -144,7 +146,10 @@ def test_demo_has_no_seventh_gift_and_earlier_doors_stay_open(client):
     assert client.get("/api/doors/7").status_code == 404
     assert client.get("/api/doors/1").status_code == 200
     assert client.get("/api/calendar").json() == {
-        "doors": [{"day": day, "unlocked": True, "today": False} for day in range(1, 7)]
+        "doors": [
+            {"day": day, "releaseDate": f"2026-11-{day + 24}", "unlocked": True, "today": False}
+            for day in range(1, 7)
+        ]
     }
 
 

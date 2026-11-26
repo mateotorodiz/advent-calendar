@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#142d28">
+    <meta name="theme-color" content="#f2dfc5">
     <meta name="robots" content="noindex, nofollow">
     <title>Advent calendar</title>
     <link rel="stylesheet" href="/calendar.css">
@@ -12,8 +12,7 @@
   <body>
     <main class="shell">
       <header class="masthead">
-        <div class="masthead-title"><h1>Advent<br>calendar</h1></div>
-        <div class="ornament" aria-hidden="true"><span></span></div>
+        <h1>Advent Calendar</h1>
       </header>
 
       <section id="loading" class="panel loading">
@@ -34,11 +33,14 @@
         </form>
       </section>
 
-      <section id="calendar" class="panel calendar" aria-labelledby="calendar-title" hidden>
-        <h2 id="calendar-title" tabindex="-1">Choose a door</h2>
-        <p class="subtle">New doors open at midnight in Italy.</p>
+      <section id="calendar" class="calendar" aria-labelledby="calendar-title" hidden>
+        <h2 id="calendar-title" class="visually-hidden" tabindex="-1">Choose a gift</h2>
         <p id="calendar-message" class="error" role="status"></p>
-        <ol id="doors" class="doors"></ol>
+        <div id="shelf" class="shelf">
+          <img id="shelf-art" class="shelf-art" src="/christmas-shelf.jpg"
+            width="1086" height="1448" alt="">
+          <ul id="doors" class="doors" role="list"></ul>
+        </div>
       </section>
 
       <section id="gift" class="panel gift" aria-labelledby="gift-title" hidden>

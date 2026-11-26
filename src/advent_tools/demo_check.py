@@ -39,10 +39,13 @@ def check_demo(client: httpx.Client, passphrase: str, *, now: datetime | None = 
     italy = timezone(timedelta(hours=1))
     local_day = (now or datetime.now(timezone.utc)).astimezone(italy).date()
     expected = [
-        {"day": day, "unlocked": local_day >= release, "today": local_day == release}
+        {"day": day, "releaseDate": release.isoformat(), "unlocked": local_day >= release,
+         "today": local_day == release}
         for day, release in enumerate((date(2026, 11, day) for day in range(25, 31)), start=1)
     ]
-    if response.json() != {"doors": expected}:
+    # Older demo deployments sent the same state without release dates.
+    legacy = [{key: value for key, value in door.items() if key != "releaseDate"} for door in expected]
+    if response.json() not in ({"doors": expected}, {"doors": legacy}):
         raise SmokeCheckError("Door states do not match the November 25–30 Rome schedule.")
 
     for door in expected:
