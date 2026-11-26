@@ -128,7 +128,7 @@ def test_demo_build_only_packages_committed_dummy_gifts(tmp_path, gifts):
     assert result.returncode == 0, result.stderr
     output = tmp_path / "dist" / "demo" / "_gifts"
     manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
-    assert set(manifest) == {"1", "2", "3"}
+    assert set(manifest) == {str(day) for day in range(1, 7)}
     assert "Private production content" not in str(manifest)
     assert (output / "1" / "photo.png").is_file()
     assert (output / "2" / "audio.wav").is_file()

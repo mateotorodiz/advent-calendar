@@ -5,7 +5,7 @@ function releaseDates(month: number, firstDay: number, count: number): string[] 
 }
 
 const schedules = {
-  demo: releaseDates(11, 28, 3),
+  demo: releaseDates(11, 25, 6),
   production: releaseDates(12, 1, 24),
 };
 
@@ -22,6 +22,7 @@ export function calendar(schedule: keyof typeof schedules, now: Date) {
 
   return schedules[schedule].map((releaseDate, index) => ({
     day: index + 1,
+    releaseDate,
     unlocked: releaseDate <= localDate,
     today: releaseDate === localDate,
   }));

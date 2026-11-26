@@ -5,11 +5,28 @@ const passphrase = byId("passphrase");
 const unlock = byId("unlock");
 const loginError = byId("login-error");
 const grid = byId("doors");
+const shelf = byId("shelf");
+const shelfArt = byId("shelf-art");
 const calendarMessage = byId("calendar-message");
 const giftTitle = byId("gift-title");
 const giftMessage = byId("gift-message");
 const giftContent = byId("gift-content");
 const retryGift = byId("retry-gift");
+const giftDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+// Match the tags printed on the artwork, four boxes per shelf.
+const shelfOrder = [
+  17, 4, 22, 9,
+  2, 15, 7, 24,
+  13, 20, 1, 11,
+  6, 18, 12, 3,
+  23, 8, 16, 5,
+  10, 21, 14, 19,
+];
 
 let doors = null;
 let calendarRequest = null;
@@ -49,11 +66,16 @@ function requireSignIn(message) {
   show("login");
 }
 
+function showShelfArtwork() {
+  if (shelfArt.naturalWidth > 0) shelf.classList.add("has-artwork");
+}
+
 function drawDoors(previousDoors) {
   if (JSON.stringify(previousDoors) === JSON.stringify(doors)) return;
 
   const focusedId = document.activeElement?.id;
-  grid.replaceChildren(...doors.map(({ day, unlocked, today }) => {
+  grid.replaceChildren(...shelfOrder.map((day) => {
+    const { unlocked = false, today = false } = doors.find((door) => door.day === day) ?? {};
     const item = node("li");
     const button = node("button", null, "door");
     button.type = "button";
@@ -62,7 +84,7 @@ function drawDoors(previousDoors) {
     const state = today ? "Today" : unlocked ? "Open" : "Locked";
     button.setAttribute("aria-label", `Door ${day}, ${state.toLowerCase()}`);
     if (today) button.setAttribute("aria-current", "date");
-    button.append(node("span", String(day), "door-number"), node("span", state, "door-state"));
+    button.append(node("span", String(day), "door-number"));
     button.addEventListener("click", () => { location.hash = `door-${day}`; });
     item.append(button);
     return item;
@@ -127,7 +149,7 @@ async function renderRoute() {
   clearGift();
   activeDay = day;
   const requestId = giftRequest;
-  giftTitle.textContent = `Door ${day}`;
+  giftTitle.textContent = door.releaseDate ? giftDate.format(new Date(door.releaseDate)) : "Your gift";
   giftMessage.textContent = "Opening your gift…";
   show("gift");
   giftTitle.focus();
@@ -217,6 +239,8 @@ form.addEventListener("submit", async (event) => {
 });
 
 byId("retry-calendar").addEventListener("click", refreshCalendar);
+shelfArt.addEventListener("load", showShelfArtwork);
+showShelfArtwork();
 retryGift.addEventListener("click", () => {
   activeDay = null;
   void renderRoute();
